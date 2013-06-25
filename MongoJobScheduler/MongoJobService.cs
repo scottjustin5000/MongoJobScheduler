@@ -15,7 +15,7 @@ namespace MongoJobScheduler
         public MongoJobService()
         {
             _taskFactory = new Factory<ScheduleTask>();
-            //InitializeComponent();
+            InitializeComponent();
         }
         private void RunProcess(object state)
         {
