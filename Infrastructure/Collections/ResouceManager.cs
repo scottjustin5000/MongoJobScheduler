@@ -1,0 +1,64 @@
+//Questions? Comments? go to 
+//http://www.idesign.net
+
+using System;
+using System.Diagnostics;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
+using System.Transactions;
+
+namespace Infrastructure.Collections
+{
+   /// <summary>
+   /// Provides a volatile resource manager. Code by Juval Lowry.
+   /// </summary>
+   public static class ResourceManager 
+   {
+      /// <summary>
+      /// Clones the specified object.
+      /// </summary>
+      public static T Clone<T>(T source)
+      {
+         if(Object.ReferenceEquals(source,null))
+         {
+            return default(T);
+         }
+
+         IFormatter formatter = new BinaryFormatter();
+         Stream stream = new MemoryStream();
+         using(stream)
+         {
+            formatter.Serialize(stream,source);
+            stream.Seek(0,SeekOrigin.Begin);
+            T clone = (T)formatter.Deserialize(stream);
+            return clone;
+         }
+      }
+
+      /// <summary>
+      /// Ensure the type is serializable.
+      /// </summary>
+      public static void ConstrainType (Type type)
+      {
+         bool serializable = type.IsSerializable;
+         if(serializable == false)
+         {
+            string message = "The type " + type + " is not serializable";
+            throw new InvalidOperationException(message);
+         }
+      }
+
+      /// <summary>
+      /// Determines if two transactions are in the same parent transaction.
+      /// </summary>
+      public static bool SameTransaction (TransactionInformation transaction1, TransactionInformation transaction2)
+      {
+         if(transaction1.DistributedIdentifier == Guid.Empty && transaction1.DistributedIdentifier == Guid.Empty)
+         {
+            return transaction1.LocalIdentifier == transaction2.LocalIdentifier;
+         }
+         return transaction1.DistributedIdentifier == transaction2.DistributedIdentifier;
+      }
+   }
+}
